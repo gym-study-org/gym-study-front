@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Users, UserPlus, Search, Check, X, Clock, Trash2 } from 'lucide-react';
+import { ProfilePreviewModal, UserAvatar } from '@/components/profile';
 
 export default function FriendsPage() {
   const router = useRouter();
@@ -19,6 +20,24 @@ export default function FriendsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'search'>('friends');
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  const openProfile = (userId: string) => {
+    setSelectedUserId(userId);
+    setIsProfileModalOpen(true);
+  };
+
+  const closeProfile = () => {
+    setIsProfileModalOpen(false);
+    setSelectedUserId(null);
+  };
+
+  const handleFriendshipChange = () => {
+    loadFriends();
+    loadPendingRequests();
+    if (searchQuery) handleSearch();
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -170,12 +189,17 @@ export default function FriendsPage() {
               friends.map((friend) => (
                 <Card key={friend.id}>
                   <CardContent className="flex items-center justify-between py-4">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-bold text-primary-foreground">
-                        {friend.friend_name.charAt(0).toUpperCase()}
-                      </div>
+                    <div
+                      className="flex cursor-pointer items-center gap-4"
+                      onClick={() => openProfile(friend.friend_id)}
+                    >
+                      <UserAvatar
+                        src={friend.friend_avatar_url}
+                        name={friend.friend_name}
+                        size="lg"
+                      />
                       <div>
-                        <p className="font-semibold">{friend.friend_name}</p>
+                        <p className="font-semibold hover:text-primary">{friend.friend_name}</p>
                         <p className="text-sm text-muted-foreground">{friend.friend_email}</p>
                         <p className="text-sm text-blue-600">
                           {Number(friend.friend_total_study_hours).toFixed(1)}h estudadas
@@ -210,12 +234,17 @@ export default function FriendsPage() {
               pendingRequests.map((request) => (
                 <Card key={request.id}>
                   <CardContent className="flex items-center justify-between py-4">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-lg font-bold">
-                        {request.requester_name.charAt(0).toUpperCase()}
-                      </div>
+                    <div
+                      className="flex cursor-pointer items-center gap-4"
+                      onClick={() => openProfile(request.requester_id)}
+                    >
+                      <UserAvatar
+                        src={request.requester_avatar_url}
+                        name={request.requester_name}
+                        size="lg"
+                      />
                       <div>
-                        <p className="font-semibold">{request.requester_name}</p>
+                        <p className="font-semibold hover:text-primary">{request.requester_name}</p>
                         <p className="text-sm text-muted-foreground">{request.requester_email}</p>
                       </div>
                     </div>
@@ -257,12 +286,17 @@ export default function FriendsPage() {
               searchResults.map((searchedUser) => (
                 <Card key={searchedUser.id}>
                   <CardContent className="flex items-center justify-between py-4">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-lg font-bold">
-                        {searchedUser.username.charAt(0).toUpperCase()}
-                      </div>
+                    <div
+                      className="flex cursor-pointer items-center gap-4"
+                      onClick={() => openProfile(searchedUser.id)}
+                    >
+                      <UserAvatar
+                        src={searchedUser.avatar_url}
+                        name={searchedUser.full_name || searchedUser.username}
+                        size="lg"
+                      />
                       <div>
-                        <p className="font-semibold">{searchedUser.full_name || searchedUser.username}</p>
+                        <p className="font-semibold hover:text-primary">{searchedUser.full_name || searchedUser.username}</p>
                         <p className="text-sm text-muted-foreground">@{searchedUser.username}</p>
                         <p className="text-sm text-blue-600">
                           {Number(searchedUser.total_study_hours).toFixed(1)}h estudadas
@@ -288,6 +322,14 @@ export default function FriendsPage() {
           </div>
         )}
       </div>
+
+      {/* Profile Preview Modal */}
+      <ProfilePreviewModal
+        userId={selectedUserId}
+        isOpen={isProfileModalOpen}
+        onClose={closeProfile}
+        onFriendshipChange={handleFriendshipChange}
+      />
     </div>
   );
 }
