@@ -7,7 +7,7 @@ import { useStore } from '@/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { BookOpen, Target, Award, TrendingUp } from 'lucide-react';
+import { BookOpen, Target, Award, TrendingUp, Users, Trophy, Swords } from 'lucide-react';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -59,6 +59,30 @@ export default function DashboardPage() {
       icon: TrendingUp,
       href: '/stats',
       color: 'text-purple-600',
+      disabled: false,
+    },
+    {
+      title: 'Amigos',
+      description: 'Conecte-se com outros estudantes',
+      icon: Users,
+      href: '/friends',
+      color: 'text-pink-600',
+      disabled: false,
+    },
+    {
+      title: 'Ranking',
+      description: 'Veja sua posição no ranking global',
+      icon: Trophy,
+      href: '/ranking',
+      color: 'text-orange-600',
+      disabled: false,
+    },
+    {
+      title: 'Desafios',
+      description: 'Crie e participe de desafios com amigos',
+      icon: Swords,
+      href: '/challenges',
+      color: 'text-red-600',
       disabled: false,
     },
   ];
