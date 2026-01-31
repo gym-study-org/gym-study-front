@@ -7,7 +7,7 @@ import { useStore } from '@/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { BookOpen, Target, Award, TrendingUp, Users, Trophy, Swords, Edit } from 'lucide-react';
+import { BookOpen, Target, Award, TrendingUp, Users, Trophy, Swords, Edit, Sparkles } from 'lucide-react';
 import { UserAvatar, ProfileEditModal } from '@/components/profile';
 
 export default function DashboardPage() {
@@ -85,6 +85,14 @@ export default function DashboardPage() {
       icon: Swords,
       href: '/challenges',
       color: 'text-red-600',
+      disabled: false,
+    },
+    {
+      title: 'Badges',
+      description: 'Suba de nível e colecione todos os badges!',
+      icon: Sparkles,
+      href: '/badges',
+      color: 'text-amber-500',
       disabled: false,
     },
   ];

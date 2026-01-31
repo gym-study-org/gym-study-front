@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { UserAvatar } from './UserAvatar';
 import { usersApi, UserProfile } from '@/lib/api/users.api';
 import { friendshipsApi } from '@/lib/api/friendships.api';
+import { badgesApi, UserBadge } from '@/lib/api/badges.api';
+import { LeveledBadgeList } from '@/components/badges';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -24,6 +26,7 @@ import {
   UserPlus,
   UserMinus,
   ExternalLink,
+  Sparkles,
 } from 'lucide-react';
 
 interface ProfilePreviewModalProps {
@@ -40,6 +43,8 @@ export function ProfilePreviewModal({
   onFriendshipChange,
 }: ProfilePreviewModalProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [badges, setBadges] = useState<UserBadge[]>([]);
+  const [totalPoints, setTotalPoints] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
@@ -48,6 +53,8 @@ export function ProfilePreviewModal({
       loadProfile();
     } else {
       setProfile(null);
+      setBadges([]);
+      setTotalPoints(0);
     }
   }, [isOpen, userId]);
 
@@ -56,8 +63,17 @@ export function ProfilePreviewModal({
 
     setIsLoading(true);
     try {
-      const data = await usersApi.getPublicProfile(userId);
-      setProfile(data);
+      const [profileData, badgesData] = await Promise.all([
+        usersApi.getPublicProfile(userId),
+        badgesApi.getUserBadges(userId),
+      ]);
+      setProfile(profileData);
+      // Get only unlocked badges sorted by level (descending)
+      const unlockedBadges = badgesData.badges
+        .filter((b) => b.current_level > 0)
+        .sort((a, b) => b.current_level - a.current_level);
+      setBadges(unlockedBadges);
+      setTotalPoints(badgesData.total_points);
     } catch (error: any) {
       toast.error(error.response?.data?.error?.message || 'Erro ao carregar perfil');
       onClose();
@@ -190,6 +206,20 @@ export function ProfilePreviewModal({
                 <p className="text-xs text-muted-foreground">Maior Streak</p>
               </div>
             </div>
+
+            {/* Badges */}
+            {badges.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="flex items-center gap-2 text-sm font-semibold">
+                  <Sparkles className="h-4 w-4 text-yellow-500" />
+                  Badges ({badges.length})
+                  <span className="ml-auto text-xs font-normal text-muted-foreground">
+                    {totalPoints.toLocaleString()} pts
+                  </span>
+                </h4>
+                <LeveledBadgeList badges={badges} maxDisplay={6} size="md" />
+              </div>
+            )}
 
             {/* Certifications */}
             {profile.certifications.length > 0 && (
