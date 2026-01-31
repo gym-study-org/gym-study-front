@@ -7,6 +7,7 @@ interface User {
   username: string;
   full_name: string | null;
   avatar_url: string | null;
+  bio: string | null;
 }
 
 interface Notification {
@@ -24,6 +25,7 @@ interface AppState {
   isAuthenticated: boolean;
   token: string | null;
   setUser: (user: User | null) => void;
+  updateUser: (updates: Partial<User>) => void;
   setToken: (token: string | null, refreshToken?: string | null) => void;
   logout: () => void;
 
@@ -51,6 +53,10 @@ export const useStore = create<AppState>()(
           user,
           isAuthenticated: !!user,
         }),
+      updateUser: (updates) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updates } : null,
+        })),
       setToken: (token, refreshToken) => {
         if (token) {
           localStorage.setItem('token', token);

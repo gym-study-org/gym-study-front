@@ -1,17 +1,19 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useStore } from '@/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { BookOpen, Target, Award, TrendingUp } from 'lucide-react';
+import { BookOpen, Target, Award, TrendingUp, Users, Trophy, Swords, Edit, Sparkles } from 'lucide-react';
+import { UserAvatar, ProfileEditModal } from '@/components/profile';
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useStore();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -61,6 +63,38 @@ export default function DashboardPage() {
       color: 'text-purple-600',
       disabled: false,
     },
+    {
+      title: 'Amigos',
+      description: 'Conecte-se com outros estudantes',
+      icon: Users,
+      href: '/friends',
+      color: 'text-pink-600',
+      disabled: false,
+    },
+    {
+      title: 'Ranking',
+      description: 'Veja sua posição no ranking global',
+      icon: Trophy,
+      href: '/ranking',
+      color: 'text-orange-600',
+      disabled: false,
+    },
+    {
+      title: 'Desafios',
+      description: 'Crie e participe de desafios com amigos',
+      icon: Swords,
+      href: '/challenges',
+      color: 'text-red-600',
+      disabled: false,
+    },
+    {
+      title: 'Badges',
+      description: 'Suba de nível e colecione todos os badges!',
+      icon: Sparkles,
+      href: '/badges',
+      color: 'text-amber-500',
+      disabled: false,
+    },
   ];
 
   return (
@@ -78,18 +112,37 @@ export default function DashboardPage() {
 
         {/* User Info Card */}
         <Card className="mb-8">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Meu Perfil</CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditModalOpen(true)}
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Editar
+            </Button>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <p>
-              <strong>Email:</strong> {user.email}
-            </p>
-            {user.full_name && (
-              <p>
-                <strong>Nome:</strong> {user.full_name}
-              </p>
-            )}
+          <CardContent>
+            <div className="flex items-start gap-6">
+              <UserAvatar
+                src={user.avatar_url}
+                name={user.full_name || user.username}
+                size="xl"
+                editable
+                onAvatarChange={() => {}}
+              />
+              <div className="space-y-2">
+                <div>
+                  <p className="text-lg font-semibold">{user.full_name || user.username}</p>
+                  <p className="text-sm text-muted-foreground">@{user.username}</p>
+                </div>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
+                {user.bio && (
+                  <p className="text-sm">{user.bio}</p>
+                )}
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -132,6 +185,12 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Profile Edit Modal */}
+      <ProfileEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+      />
     </div>
   );
 }
