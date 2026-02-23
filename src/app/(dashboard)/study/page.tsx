@@ -109,16 +109,15 @@ export default function StudyPage() {
   }
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="mx-auto max-w-6xl space-y-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-bold">Sessões de Estudo</h1>
-          <Button onClick={() => router.push('/dashboard')} variant="outline">
-            Voltar ao Dashboard
-          </Button>
-        </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">Sessões de Estudo</h1>
+        <Button onClick={() => router.push('/dashboard')} variant="outline" size="sm">
+          ← Dashboard
+        </Button>
+      </div>
 
-        <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
           {/* Timer */}
           <div>
             <StudyTimer onFinish={handleTimerFinish} />
@@ -157,8 +156,8 @@ export default function StudyPage() {
           </Card>
         </div>
 
-        {/* Save Session Dialog */}
-        <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      {/* Save Session Dialog */}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Salvar Sessão de Estudo</DialogTitle>
@@ -240,8 +239,7 @@ export default function StudyPage() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
-      </div>
+      </Dialog>
     </div>
   );
 }

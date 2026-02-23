@@ -107,7 +107,7 @@ export default function BadgesPage() {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
+    <div className="">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-6 flex items-center gap-4">

@@ -88,7 +88,7 @@ export default function AchievementsPage() {
   if (!isAuthenticated || !user) return null;
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="">
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

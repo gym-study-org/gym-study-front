@@ -135,7 +135,7 @@ export default function GoalsPage() {
   }
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="">
       <div className="mx-auto max-w-6xl space-y-8">
         <div className="flex items-center justify-between">
           <div>

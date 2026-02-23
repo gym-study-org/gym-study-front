@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { NotificationWithActor } from '@/types/notification.types';
 
 interface User {
   id: string;
@@ -8,15 +9,6 @@ interface User {
   full_name: string | null;
   avatar_url: string | null;
   bio: string | null;
-}
-
-interface Notification {
-  id: string;
-  type: string;
-  title: string;
-  message: string;
-  read: boolean;
-  created_at: string;
 }
 
 interface AppState {
@@ -30,10 +22,13 @@ interface AppState {
   logout: () => void;
 
   // Notifications
-  notifications: Notification[];
+  notifications: NotificationWithActor[];
   unreadCount: number;
-  addNotification: (notification: Notification) => void;
+  addNotification: (notification: NotificationWithActor) => void;
+  setNotifications: (notifications: NotificationWithActor[]) => void;
+  setUnreadCount: (count: number) => void;
   markAsRead: (id: string) => void;
+  markAllAsRead: () => void;
   clearNotifications: () => void;
 
   // Socket
@@ -92,12 +87,21 @@ export const useStore = create<AppState>()(
           notifications: [notification, ...state.notifications],
           unreadCount: state.unreadCount + 1,
         })),
+      setNotifications: (notifications) =>
+        set({ notifications }),
+      setUnreadCount: (count) =>
+        set({ unreadCount: count }),
       markAsRead: (id) =>
         set((state) => ({
           notifications: state.notifications.map((n) =>
-            n.id === id ? { ...n, read: true } : n
+            n.id === id ? { ...n, is_read: true } : n
           ),
           unreadCount: Math.max(0, state.unreadCount - 1),
+        })),
+      markAllAsRead: () =>
+        set((state) => ({
+          notifications: state.notifications.map((n) => ({ ...n, is_read: true })),
+          unreadCount: 0,
         })),
       clearNotifications: () =>
         set({
@@ -117,6 +121,7 @@ export const useStore = create<AppState>()(
       partialize: (state) => ({
         user: state.user,
         token: state.token,
+        isAuthenticated: state.isAuthenticated,
       }),
     }
   )
