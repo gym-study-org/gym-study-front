@@ -36,7 +36,7 @@ export function GemsBadge({ className, panel = false }: GemsBadgeProps) {
       <Link
         href="/shop"
         className={cn(
-          'flex items-center justify-between rounded-2xl border-2 border-[#1CB0F6]/30 bg-[#E0F4FF] px-3 py-2.5 transition-all hover:-translate-y-0.5 hover:shadow-card no-underline',
+          'flex items-center justify-between rounded-2xl border-2 border-[#1CB0F6]/30 bg-duo-blue-tint px-3 py-2.5 transition-all hover:-translate-y-0.5 hover:shadow-card no-underline',
           className
         )}
       >
@@ -49,7 +49,7 @@ export function GemsBadge({ className, panel = false }: GemsBadgeProps) {
             <p className="text-sm font-black text-[#1CB0F6]">{balance}</p>
           </div>
         </div>
-        <span className="text-xs font-bold text-[#1CB0F6] bg-white rounded-lg px-2 py-1">
+        <span className="text-xs font-bold text-[#1CB0F6] bg-card rounded-lg px-2 py-1">
           Loja →
         </span>
       </Link>

@@ -69,7 +69,7 @@ export function XPBar({ compact = false, sidebar = false, className }: XPBarProp
     <div className={cn('space-y-2', className)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFFAE0]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-duo-gold-tint">
             <Star className="h-4 w-4 text-[#FFC800] fill-[#FFC800]" />
           </div>
           <span className="font-extrabold text-lg">Nível {summary.level}</span>

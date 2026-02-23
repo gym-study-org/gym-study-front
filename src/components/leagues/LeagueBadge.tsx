@@ -35,7 +35,7 @@ export function LeagueBadge({ className, sidebar = false }: LeagueBadgeProps) {
       <Link
         href="/leagues"
         className={cn(
-          'flex items-center gap-2.5 rounded-2xl border-2 px-3 py-2.5 transition-all hover:-translate-y-0.5 hover:shadow-card no-underline bg-white',
+          'flex items-center gap-2.5 rounded-2xl border-2 px-3 py-2.5 transition-all hover:-translate-y-0.5 hover:shadow-card no-underline bg-card',
           className
         )}
         style={{ borderColor: data.league.color + '40' }}

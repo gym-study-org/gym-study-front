@@ -60,7 +60,7 @@ export function StreakWidget({ compact = false, className }: StreakWidgetProps) 
           <div
             className={cn(
               'flex h-10 w-10 items-center justify-center rounded-xl',
-              isActive ? 'bg-[#FFF0E0]' : 'bg-muted'
+              isActive ? 'bg-duo-orange-tint' : 'bg-muted'
             )}
           >
             <Flame
@@ -93,7 +93,7 @@ export function StreakWidget({ compact = false, className }: StreakWidgetProps) 
                   className={cn(
                     'flex h-7 w-7 items-center justify-center rounded-lg cursor-default',
                     i < status.streak_freezes_available
-                      ? 'bg-[#E0F4FF]'
+                      ? 'bg-duo-blue-tint'
                       : 'bg-muted'
                   )}
                 >
@@ -151,7 +151,7 @@ export function StreakWidget({ compact = false, className }: StreakWidgetProps) 
           {status.milestones_achieved.map((m) => (
             <span
               key={m}
-              className="inline-flex items-center rounded-full bg-[#FFF0E0] border border-[#FF9600]/30 px-2 py-0.5 text-xs font-bold text-[#FF9600]"
+              className="inline-flex items-center rounded-full bg-duo-orange-tint border border-[#FF9600]/30 px-2 py-0.5 text-xs font-bold text-[#FF9600]"
             >
               🔥 {m}d
             </span>

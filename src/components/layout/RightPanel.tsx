@@ -14,7 +14,7 @@ interface PanelSectionProps {
 
 function PanelSection({ title, emoji, children, accentColor = '#58CC02' }: PanelSectionProps) {
   return (
-    <div className="rounded-2xl border-2 border-border bg-white shadow-duo-card overflow-hidden">
+    <div className="rounded-2xl border-2 border-border bg-card shadow-duo-card overflow-hidden">
       {/* Section header with colored left border */}
       <div
         className="px-3 pt-3 pb-2 border-b border-border"

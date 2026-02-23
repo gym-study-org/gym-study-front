@@ -41,6 +41,14 @@
     --ring: 94 98% 40%;
 
     --radius: 0.875rem;               /* 14px — generously rounded */
+
+    /* Light tints for gamification backgrounds */
+    --duo-gold-tint: 47 100% 93%;
+    --duo-orange-tint: 30 100% 93%;
+    --duo-blue-tint: 200 100% 93%;
+    --duo-green-tint: 94 80% 92%;
+    --duo-purple-tint: 280 100% 95%;
+    --duo-red-tint: 0 100% 94%;
   }
 
   .dark {
@@ -71,6 +79,14 @@
     --border: 220 18% 22%;
     --input: 220 18% 22%;
     --ring: 94 98% 43%;
+
+    /* Dark tints for gamification backgrounds */
+    --duo-gold-tint: 47 60% 16%;
+    --duo-orange-tint: 30 60% 16%;
+    --duo-blue-tint: 200 60% 16%;
+    --duo-green-tint: 94 50% 16%;
+    --duo-purple-tint: 280 50% 16%;
+    --duo-red-tint: 0 60% 16%;
   }
 }
 

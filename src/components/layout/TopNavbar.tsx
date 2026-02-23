@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Dumbbell, Search, LogOut, User, Settings } from 'lucide-react';
+import { Dumbbell, Search, LogOut, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { ModeToggle } from '@/components/ui/mode-toggle';
 import { useStore } from '@/store';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -31,7 +32,7 @@ export function TopNavbar() {
     : 'GS';
 
   return (
-    <header className="sticky top-0 z-50 flex h-14 items-center border-b-2 border-border bg-white shadow-sm">
+    <header className="sticky top-0 z-50 flex h-14 items-center border-b-2 border-border bg-card shadow-sm">
       <div className="flex w-full items-center gap-3 px-4">
         {/* Logo */}
         <Link
@@ -52,12 +53,13 @@ export function TopNavbar() {
           <input
             type="text"
             placeholder="Buscar usuários, artigos..."
-            className="h-9 w-full rounded-full border-2 border-border bg-background pl-9 pr-4 text-sm outline-none transition-colors focus:border-primary focus:bg-white focus:ring-0"
+            className="h-9 w-full rounded-full border-2 border-border bg-background pl-9 pr-4 text-sm outline-none transition-colors focus:border-primary focus:bg-background focus:ring-0"
           />
         </div>
 
         {/* Right actions */}
         <div className="flex items-center gap-1.5 shrink-0">
+          <ModeToggle />
           <NotificationBell />
 
           {/* User Dropdown */}

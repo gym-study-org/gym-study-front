@@ -57,6 +57,12 @@ const config: Config = {
           purple: '#CE82FF',
           gold: '#FFC800',
           'gold-dark': '#D4A800',
+          'gold-tint': 'hsl(var(--duo-gold-tint))',
+          'orange-tint': 'hsl(var(--duo-orange-tint))',
+          'blue-tint': 'hsl(var(--duo-blue-tint))',
+          'green-tint': 'hsl(var(--duo-green-tint))',
+          'purple-tint': 'hsl(var(--duo-purple-tint))',
+          'red-tint': 'hsl(var(--duo-red-tint))',
         },
       },
       borderRadius: {

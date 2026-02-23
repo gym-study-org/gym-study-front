@@ -47,7 +47,7 @@ export function LeftSidebar() {
     <aside className="hidden lg:flex flex-col w-60 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto scrollbar-hide border-r bg-card py-4">
       {/* Mini user card */}
       {user && (
-        <div className="mx-3 mb-4 rounded-2xl border-2 border-border bg-white p-3 shadow-card">
+        <div className="mx-3 mb-4 rounded-2xl border-2 border-border bg-card p-3 shadow-card">
           <div className="flex items-center gap-2.5">
             <Avatar className="h-10 w-10 ring-2 ring-primary/30">
               <AvatarImage src={user.avatar_url || undefined} />
