@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { Dumbbell, Search, LogOut, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { ModeToggle } from '@/components/ui/mode-toggle';
+import { ProfileEditModal } from '@/components/profile/ProfileEditModal';
 import { useStore } from '@/store';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -20,6 +22,7 @@ import { toast } from 'sonner';
 export function TopNavbar() {
   const { user, logout } = useStore();
   const router = useRouter();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -32,6 +35,7 @@ export function TopNavbar() {
     : 'GS';
 
   return (
+    <>
     <header className="sticky top-0 z-50 flex h-14 items-center border-b-2 border-border bg-card shadow-sm">
       <div className="flex w-full items-center gap-3 px-4">
         {/* Logo */}
@@ -84,11 +88,12 @@ export function TopNavbar() {
                   <DropdownMenuSeparator />
                 </>
               )}
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard" className="gap-2 no-underline font-semibold">
-                  <User className="h-4 w-4" />
-                  Meu Perfil
-                </Link>
+              <DropdownMenuItem
+                onClick={() => setIsProfileModalOpen(true)}
+                className="gap-2 font-semibold cursor-pointer"
+              >
+                <User className="h-4 w-4" />
+                Meu Perfil
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -103,5 +108,11 @@ export function TopNavbar() {
         </div>
       </div>
     </header>
+
+    <ProfileEditModal
+      isOpen={isProfileModalOpen}
+      onClose={() => setIsProfileModalOpen(false)}
+    />
+    </>
   );
 }
