@@ -71,4 +71,9 @@ export const usersApi = {
     const response = await apiClient.get<{ data: UserProfile }>(`/users/${userId}/profile`);
     return response.data.data;
   },
+
+  getProfileByUsername: async (username: string) => {
+    const response = await apiClient.get<{ data: UserProfile }>(`/users/by-username/${username}/profile`);
+    return response.data.data;
+  },
 };

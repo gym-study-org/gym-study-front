@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Trophy, Medal, Users, TrendingUp, Calendar, CalendarDays } from 'lucide-react';
-import { ProfilePreviewModal, UserAvatar } from '@/components/profile';
+import { UserAvatar } from '@/components/profile';
 
 export default function RankingPage() {
   const router = useRouter();
@@ -17,18 +17,6 @@ export default function RankingPage() {
   const [userPosition, setUserPosition] = useState<UserPosition | null>(null);
   const [activeTab, setActiveTab] = useState<'global' | 'friends' | 'monthly' | 'weekly'>('global');
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-
-  const openProfile = (userId: string) => {
-    setSelectedUserId(userId);
-    setIsProfileModalOpen(true);
-  };
-
-  const closeProfile = () => {
-    setIsProfileModalOpen(false);
-    setSelectedUserId(null);
-  };
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -191,7 +179,7 @@ export default function RankingPage() {
                     </div>
                     <div
                       className="flex cursor-pointer items-center gap-4"
-                      onClick={() => !entry.is_current_user && openProfile(entry.user_id)}
+                      onClick={() => !entry.is_current_user && router.push(`/profile/${entry.username}`)}
                     >
                       <UserAvatar
                         src={entry.avatar_url}
@@ -231,13 +219,6 @@ export default function RankingPage() {
         </div>
       </div>
 
-      {/* Profile Preview Modal */}
-      <ProfilePreviewModal
-        userId={selectedUserId}
-        isOpen={isProfileModalOpen}
-        onClose={closeProfile}
-        onFriendshipChange={() => loadRanking()}
-      />
     </div>
   );
 }

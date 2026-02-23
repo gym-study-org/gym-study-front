@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Globe, Users, Lock, Send, Tag, ChevronDown } from 'lucide-react';
+import { useState, useRef, ElementType } from 'react';
+import { Globe, Users, Lock, Send, Tag, ChevronDown, UserCircle } from 'lucide-react';
 import { useStore } from '@/store';
 import { feedApi } from '@/lib/api/feed.api';
-import { PostWithAuthor, PostVisibility } from '@/types/feed.types';
+import { PostWithAuthor, PostVisibility, PostAudience } from '@/types/feed.types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
-const VISIBILITY_OPTIONS: { value: PostVisibility; label: string; icon: React.ElementType }[] = [
+const VISIBILITY_OPTIONS: { value: PostVisibility; label: string; icon: ElementType }[] = [
   { value: 'public', label: 'Público', icon: Globe },
   { value: 'friends', label: 'Amigos', icon: Users },
   { value: 'private', label: 'Privado', icon: Lock },
@@ -18,12 +18,15 @@ const VISIBILITY_OPTIONS: { value: PostVisibility; label: string; icon: React.El
 
 interface PostComposerProps {
   onPostCreated: (post: PostWithAuthor) => void;
+  defaultAudience?: PostAudience;
+  lockAudience?: boolean;
 }
 
-export function PostComposer({ onPostCreated }: PostComposerProps) {
+export function PostComposer({ onPostCreated, defaultAudience = 'global', lockAudience = false }: PostComposerProps) {
   const { user } = useStore();
   const [content, setContent] = useState('');
   const [visibility, setVisibility] = useState<PostVisibility>('public');
+  const [audience, setAudience] = useState<PostAudience>(defaultAudience);
   const [tags, setTags] = useState('');
   const [showTags, setShowTags] = useState(false);
   const [showVisibility, setShowVisibility] = useState(false);
@@ -51,6 +54,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
       const post = await feedApi.createPost({
         content: content.trim(),
         visibility,
+        audience,
         tags: tagsArray.length > 0 ? tagsArray : undefined,
       });
 
@@ -112,6 +116,36 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
                   placeholder="Tags separadas por vírgula (ex: javascript, react)"
                   className="w-full rounded-lg border bg-muted/30 px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
+              )}
+
+              {/* Audience toggle */}
+              {!lockAudience && (
+                <div className="flex items-center gap-1.5 rounded-lg border bg-muted/30 p-1">
+                  <button
+                    onClick={() => setAudience('global')}
+                    className={cn(
+                      'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+                      audience === 'global'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    <Globe className="h-3.5 w-3.5" />
+                    Feed Global
+                  </button>
+                  <button
+                    onClick={() => setAudience('personal')}
+                    className={cn(
+                      'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+                      audience === 'personal'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    <UserCircle className="h-3.5 w-3.5" />
+                    Meu Perfil
+                  </button>
+                </div>
               )}
 
               {/* Toolbar */}

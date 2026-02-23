@@ -7,6 +7,7 @@ import {
   UpdatePostInput,
   CreateCommentInput,
   FeedQuery,
+  PostAudience,
 } from '@/types/feed.types';
 
 export interface FeedResponse {
@@ -40,11 +41,13 @@ export const feedApi = {
   getUserFeed: async (
     userId: string,
     limit?: number,
-    cursor?: string
+    cursor?: string,
+    audience?: PostAudience
   ): Promise<FeedResponse> => {
     const params = new URLSearchParams();
     if (limit) params.set('limit', String(limit));
     if (cursor) params.set('cursor', cursor);
+    if (audience) params.set('audience', audience);
     const response = await apiClient.get<{ data: FeedResponse }>(
       `/feed/user/${userId}?${params.toString()}`
     );

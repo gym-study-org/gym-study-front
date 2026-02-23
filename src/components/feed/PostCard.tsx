@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, ElementType } from 'react';
+import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -11,12 +12,17 @@ import {
   Trash2,
   Send,
   Share2,
+  Globe,
+  Users,
+  Lock,
+  ChevronDown,
 } from 'lucide-react';
-import { PostWithAuthor, CommentWithAuthor } from '@/types/feed.types';
+import { PostWithAuthor, CommentWithAuthor, PostVisibility } from '@/types/feed.types';
 import { feedApi } from '@/lib/api/feed.api';
 import { useStore } from '@/store';
 import { PostTypeIndicator } from './PostTypeIndicator';
 import { CommentSection } from './CommentSection';
+import { ShareDialog } from './ShareDialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,6 +35,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+
+const VISIBILITY_OPTIONS: { value: PostVisibility; label: string; icon: ElementType }[] = [
+  { value: 'public', label: 'Público', icon: Globe },
+  { value: 'friends', label: 'Amigos', icon: Users },
+  { value: 'private', label: 'Privado', icon: Lock },
+];
 
 interface PostCardProps {
   post: PostWithAuthor;
@@ -45,7 +57,10 @@ export function PostCard({ post, onPostUpdated, onPostDeleted }: PostCardProps) 
   const [comments, setComments] = useState<CommentWithAuthor[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
+  const [editVisibility, setEditVisibility] = useState<PostVisibility>(post.visibility);
+  const [showEditVisibility, setShowEditVisibility] = useState(false);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   const isOwner = user?.id === post.user_id;
 
@@ -100,9 +115,13 @@ export function PostCard({ post, onPostUpdated, onPostDeleted }: PostCardProps) 
   const handleEdit = async () => {
     if (!editContent.trim()) return;
     try {
-      const updated = await feedApi.updatePost(post.id, { content: editContent.trim() });
+      const updated = await feedApi.updatePost(post.id, {
+        content: editContent.trim(),
+        visibility: editVisibility,
+      });
       onPostUpdated?.(updated);
       setIsEditing(false);
+      setShowEditVisibility(false);
       toast.success('Post atualizado');
     } catch (error: any) {
       toast.error(error.response?.data?.error?.message || 'Erro ao atualizar');
@@ -127,24 +146,45 @@ export function PostCard({ post, onPostUpdated, onPostDeleted }: PostCardProps) 
       {/* Header */}
       <div className="flex items-start justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 ring-2 ring-primary/10">
-            <AvatarImage src={post.author_avatar_url || undefined} />
-            <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
-              {authorInitial}
-            </AvatarFallback>
-          </Avatar>
+          <Link href={`/profile/${post.author_username}`} className="no-underline">
+            <Avatar className="h-10 w-10 ring-2 ring-primary/10 hover:ring-primary/40 transition-all">
+              <AvatarImage src={post.author_avatar_url || undefined} />
+              <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                {authorInitial}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-semibold leading-none">{authorName}</span>
+              <Link
+                href={`/profile/${post.author_username}`}
+                className="text-sm font-semibold leading-none no-underline hover:text-primary transition-colors"
+              >
+                {authorName}
+              </Link>
               <PostTypeIndicator type={post.post_type} />
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              @{post.author_username} ·{' '}
-              {formatDistanceToNow(new Date(post.created_at), {
-                addSuffix: true,
-                locale: ptBR,
-              })}
-            </p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <p className="text-xs text-muted-foreground">
+                @{post.author_username} ·{' '}
+                {formatDistanceToNow(new Date(post.created_at), {
+                  addSuffix: true,
+                  locale: ptBR,
+                })}
+              </p>
+              {isOwner && post.visibility === 'friends' && (
+                <span className="flex items-center gap-0.5 text-[10px] text-blue-500 font-medium">
+                  <Users className="h-3 w-3" />
+                  Amigos
+                </span>
+              )}
+              {isOwner && post.visibility === 'private' && (
+                <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground font-medium">
+                  <Lock className="h-3 w-3" />
+                  Privado
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -182,6 +222,45 @@ export function PostCard({ post, onPostUpdated, onPostDeleted }: PostCardProps) 
               className="min-h-[80px] resize-none"
               autoFocus
             />
+            {/* Visibility picker */}
+            <div className="relative inline-block">
+              {(() => {
+                const selected = VISIBILITY_OPTIONS.find((o) => o.value === editVisibility)!;
+                const Icon = selected.icon;
+                return (
+                  <button
+                    onClick={() => setShowEditVisibility(!showEditVisibility)}
+                    className="flex items-center gap-1.5 rounded-lg border bg-muted/30 px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {selected.label}
+                    <ChevronDown className="h-3 w-3" />
+                  </button>
+                );
+              })()}
+              {showEditVisibility && (
+                <div className="absolute top-full left-0 mt-1 z-50 rounded-xl border bg-card shadow-card-hover min-w-[130px] py-1">
+                  {VISIBILITY_OPTIONS.map((opt) => {
+                    const Icon = opt.icon;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => { setEditVisibility(opt.value); setShowEditVisibility(false); }}
+                        className={cn(
+                          'flex w-full items-center gap-2 px-3 py-2 text-xs font-medium transition-colors',
+                          editVisibility === opt.value
+                            ? 'text-primary bg-primary/5'
+                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        )}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             <div className="flex gap-2">
               <Button size="sm" onClick={handleEdit} className="gap-1.5">
                 <Send className="h-3.5 w-3.5" />
@@ -190,16 +269,50 @@ export function PostCard({ post, onPostUpdated, onPostDeleted }: PostCardProps) 
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => { setIsEditing(false); setEditContent(post.content); }}
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditContent(post.content);
+                  setEditVisibility(post.visibility);
+                  setShowEditVisibility(false);
+                }}
               >
                 Cancelar
               </Button>
             </div>
           </div>
         ) : (
-          <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground">
-            {post.content}
-          </p>
+          <>
+            {post.content && (
+              <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground">
+                {post.content}
+              </p>
+            )}
+            {/* Shared post embed */}
+            {post.post_type === 'shared_post' && post.metadata?.shared_post_id && (
+              <div className={cn('rounded-xl border bg-muted/20 p-3 space-y-2', post.content ? 'mt-3' : '')}>
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={(post.metadata.shared_author_avatar_url as string) || undefined} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-semibold">
+                      {((post.metadata.shared_author_full_name as string) || (post.metadata.shared_author_username as string) || '?')[0].toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Link
+                    href={`/profile/${post.metadata.shared_author_username as string}`}
+                    className="text-xs font-semibold hover:text-primary transition-colors no-underline"
+                  >
+                    {(post.metadata.shared_author_full_name as string) || (post.metadata.shared_author_username as string)}
+                  </Link>
+                  <span className="text-xs text-muted-foreground">
+                    @{post.metadata.shared_author_username as string}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground line-clamp-4 leading-relaxed whitespace-pre-wrap">
+                  {(post.metadata.shared_content as string) || <span className="italic">Post sem texto</span>}
+                </p>
+              </div>
+            )}
+          </>
         )}
 
         {/* Tags */}
@@ -262,7 +375,10 @@ export function PostCard({ post, onPostUpdated, onPostDeleted }: PostCardProps) 
           <span>Comentar</span>
         </button>
 
-        <button className="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+        <button
+          onClick={() => setShowShareDialog(true)}
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
           <Share2 className="h-4 w-4" />
           <span>Compartilhar</span>
         </button>
@@ -284,6 +400,15 @@ export function PostCard({ post, onPostUpdated, onPostDeleted }: PostCardProps) 
             />
           )}
         </div>
+      )}
+
+      {/* Share Dialog */}
+      {showShareDialog && (
+        <ShareDialog
+          post={post}
+          isOpen={showShareDialog}
+          onClose={() => setShowShareDialog(false)}
+        />
       )}
     </article>
   );

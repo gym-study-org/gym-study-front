@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Users, UserPlus, Search, Check, X, Clock, Trash2 } from 'lucide-react';
-import { ProfilePreviewModal, UserAvatar } from '@/components/profile';
+import { UserAvatar } from '@/components/profile';
 
 export default function FriendsPage() {
   const router = useRouter();
@@ -20,17 +20,9 @@ export default function FriendsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'search'>('friends');
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
-  const openProfile = (userId: string) => {
-    setSelectedUserId(userId);
-    setIsProfileModalOpen(true);
-  };
-
-  const closeProfile = () => {
-    setIsProfileModalOpen(false);
-    setSelectedUserId(null);
+  const goToProfile = (username: string) => {
+    router.push(`/profile/${username}`);
   };
 
   const handleFriendshipChange = () => {
@@ -191,7 +183,7 @@ export default function FriendsPage() {
                   <CardContent className="flex items-center justify-between py-4">
                     <div
                       className="flex cursor-pointer items-center gap-4"
-                      onClick={() => openProfile(friend.friend_id)}
+                      onClick={() => goToProfile(friend.friend_name)}
                     >
                       <UserAvatar
                         src={friend.friend_avatar_url}
@@ -236,7 +228,7 @@ export default function FriendsPage() {
                   <CardContent className="flex items-center justify-between py-4">
                     <div
                       className="flex cursor-pointer items-center gap-4"
-                      onClick={() => openProfile(request.requester_id)}
+                      onClick={() => goToProfile(request.requester_name)}
                     >
                       <UserAvatar
                         src={request.requester_avatar_url}
@@ -288,7 +280,7 @@ export default function FriendsPage() {
                   <CardContent className="flex items-center justify-between py-4">
                     <div
                       className="flex cursor-pointer items-center gap-4"
-                      onClick={() => openProfile(searchedUser.id)}
+                      onClick={() => goToProfile(searchedUser.username)}
                     >
                       <UserAvatar
                         src={searchedUser.avatar_url}
@@ -323,13 +315,6 @@ export default function FriendsPage() {
         )}
       </div>
 
-      {/* Profile Preview Modal */}
-      <ProfilePreviewModal
-        userId={selectedUserId}
-        isOpen={isProfileModalOpen}
-        onClose={closeProfile}
-        onFriendshipChange={handleFriendshipChange}
-      />
     </div>
   );
 }

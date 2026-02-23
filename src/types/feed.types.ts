@@ -5,9 +5,12 @@ export type PostType =
   | 'achievement_share'
   | 'challenge_complete'
   | 'milestone'
-  | 'code_snippet';
+  | 'code_snippet'
+  | 'poll'
+  | 'shared_post';
 
 export type PostVisibility = 'public' | 'friends' | 'private';
+export type PostAudience = 'global' | 'personal';
 
 export interface PostWithAuthor {
   id: string;
@@ -20,6 +23,7 @@ export interface PostWithAuthor {
   metadata: Record<string, unknown>;
   tags: string[];
   visibility: PostVisibility;
+  audience: PostAudience;
   likes_count: number;
   comments_count: number;
   is_pinned: boolean;
@@ -59,6 +63,7 @@ export interface CreatePostInput {
   metadata?: Record<string, unknown>;
   tags?: string[];
   visibility?: PostVisibility;
+  audience?: PostAudience;
 }
 
 export interface UpdatePostInput {

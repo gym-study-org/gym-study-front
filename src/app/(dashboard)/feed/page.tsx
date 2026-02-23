@@ -8,7 +8,7 @@ import { PostCard } from '@/components/feed/PostCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquare, Compass } from 'lucide-react';
+import { MessageSquare, Compass, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { StoriesBar } from '@/components/stories/StoriesBar';
 
@@ -107,15 +107,19 @@ export default function FeedPage() {
     <div className="mx-auto max-w-2xl space-y-4">
       <h2 className="text-lg font-bold">Feed</h2>
 
-      <StoriesBar />
+      {/* Stories */}
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Stories</p>
+        <StoriesBar />
+      </div>
 
         <PostComposer onPostCreated={handlePostCreated} />
 
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="w-full">
             <TabsTrigger value="feed" className="flex-1 gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Meu Feed
+              <Globe className="h-4 w-4" />
+              Global
             </TabsTrigger>
             <TabsTrigger value="explore" className="flex-1 gap-2">
               <Compass className="h-4 w-4" />
