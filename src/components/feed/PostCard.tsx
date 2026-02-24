@@ -24,7 +24,6 @@ import { PostTypeIndicator } from './PostTypeIndicator';
 import { CommentSection } from './CommentSection';
 import { ShareDialog } from './ShareDialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -33,6 +32,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -61,8 +61,11 @@ export function PostCard({ post, onPostUpdated, onPostDeleted }: PostCardProps) 
   const [showEditVisibility, setShowEditVisibility] = useState(false);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   const isOwner = user?.id === post.user_id;
+
+  const isVideoUrl = (url: string) => /\.(mp4|webm|mov)(\?|$)/i.test(url);
 
   const handleToggleLike = async () => {
     setLiked(!liked);
@@ -328,6 +331,43 @@ export function PostCard({ post, onPostUpdated, onPostDeleted }: PostCardProps) 
             ))}
           </div>
         )}
+
+        {/* Media Gallery */}
+        {post.media_urls && post.media_urls.length > 0 && (
+          <div
+            className={cn(
+              'mt-3 grid gap-1 rounded-xl overflow-hidden',
+              post.media_urls.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+            )}
+          >
+            {post.media_urls.map((url, i) => {
+              const isVid = isVideoUrl(url);
+              const isThirdOfThree = post.media_urls.length === 3 && i === 0;
+              return (
+                <div
+                  key={i}
+                  className={cn('relative aspect-square', isThirdOfThree && 'col-span-2 aspect-video')}
+                >
+                  {isVid ? (
+                    <video
+                      src={url}
+                      controls
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <img
+                      src={url}
+                      alt=""
+                      className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
+                      onClick={() => setLightboxUrl(url)}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Reaction count summary */}
@@ -410,6 +450,19 @@ export function PostCard({ post, onPostUpdated, onPostDeleted }: PostCardProps) 
           onClose={() => setShowShareDialog(false)}
         />
       )}
+
+      {/* Lightbox */}
+      <Dialog open={!!lightboxUrl} onOpenChange={(open) => { if (!open) setLightboxUrl(null); }}>
+        <DialogContent className="max-w-4xl p-1 bg-black border-0">
+          {lightboxUrl && (
+            <img
+              src={lightboxUrl}
+              alt=""
+              className="w-full h-full object-contain max-h-[85vh]"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </article>
   );
 }

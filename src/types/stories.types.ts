@@ -1,4 +1,29 @@
-export type StoryContentType = 'text' | 'image' | 'study_update' | 'achievement';
+export type StoryContentType = 'text' | 'image' | 'video' | 'study_update' | 'achievement';
+
+export interface TextOverlay {
+  id: string;
+  text: string;
+  color: string;
+  fontSize: number;
+  x: number; // percent 0-100
+  y: number; // percent 0-100
+}
+
+export interface StickerOverlay {
+  id: string;
+  emoji: string;
+  x: number; // percent 0-100
+  y: number; // percent 0-100
+  size: number; // px
+}
+
+export interface StoryMetadata {
+  filter?: string;
+  text_overlays?: TextOverlay[];
+  stickers?: StickerOverlay[];
+  trim_start?: number;
+  trim_end?: number;
+}
 
 export interface StoryWithAuthor {
   id: string;

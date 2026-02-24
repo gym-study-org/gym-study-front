@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useRef, ElementType } from 'react';
-import { Globe, Users, Lock, Send, Tag, ChevronDown, UserCircle } from 'lucide-react';
+import { Globe, Users, Lock, Send, Tag, ChevronDown, UserCircle, ImagePlus, Camera, X, Loader2 } from 'lucide-react';
 import { useStore } from '@/store';
 import { feedApi } from '@/lib/api/feed.api';
+import { uploadApi } from '@/lib/api/upload.api';
 import { PostWithAuthor, PostVisibility, PostAudience } from '@/types/feed.types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,8 @@ const VISIBILITY_OPTIONS: { value: PostVisibility; label: string; icon: ElementT
   { value: 'friends', label: 'Amigos', icon: Users },
   { value: 'private', label: 'Privado', icon: Lock },
 ];
+
+const MAX_MEDIA = 4;
 
 interface PostComposerProps {
   onPostCreated: (post: PostWithAuthor) => void;
@@ -32,7 +35,14 @@ export function PostComposer({ onPostCreated, defaultAudience = 'global', lockAu
   const [showVisibility, setShowVisibility] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [expanded, setExpanded] = useState(false);
+
+  // Media attachment state
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const selectedVisibility = VISIBILITY_OPTIONS.find((o) => o.value === visibility)!;
   const VisibilityIcon = selectedVisibility.icon;
@@ -42,10 +52,38 @@ export function PostComposer({ onPostCreated, defaultAudience = 'global', lockAu
     setTimeout(() => textareaRef.current?.focus(), 50);
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const remaining = MAX_MEDIA - mediaFiles.length;
+    const selected = files.slice(0, remaining);
+
+    const previews = selected.map((f) => URL.createObjectURL(f));
+    setMediaFiles((prev) => [...prev, ...selected]);
+    setMediaPreviews((prev) => [...prev, ...previews]);
+
+    // Reset input so same file can be re-selected
+    e.target.value = '';
+  };
+
+  const removeMedia = (index: number) => {
+    URL.revokeObjectURL(mediaPreviews[index]);
+    setMediaFiles((prev) => prev.filter((_, i) => i !== index));
+    setMediaPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async () => {
-    if (!content.trim()) return;
+    if (!content.trim() && mediaFiles.length === 0) return;
     setIsSubmitting(true);
     try {
+      // Upload all media files first
+      let uploadedUrls: string[] = [];
+      if (mediaFiles.length > 0) {
+        const results = await Promise.all(mediaFiles.map((f) => uploadApi.uploadMedia(f)));
+        uploadedUrls = results.map((r) => r.url);
+      }
+
       const tagsArray = tags
         .split(',')
         .map((t) => t.trim())
@@ -56,13 +94,19 @@ export function PostComposer({ onPostCreated, defaultAudience = 'global', lockAu
         visibility,
         audience,
         tags: tagsArray.length > 0 ? tagsArray : undefined,
+        media_urls: uploadedUrls.length > 0 ? uploadedUrls : undefined,
       });
+
+      // Revoke blob URLs
+      mediaPreviews.forEach((url) => URL.revokeObjectURL(url));
 
       onPostCreated(post);
       setContent('');
       setTags('');
       setShowTags(false);
       setExpanded(false);
+      setMediaFiles([]);
+      setMediaPreviews([]);
       toast.success('Post publicado!');
     } catch (error: any) {
       toast.error(error.response?.data?.error?.message || 'Erro ao publicar');
@@ -73,6 +117,8 @@ export function PostComposer({ onPostCreated, defaultAudience = 'global', lockAu
 
   const authorName = user?.full_name || user?.username || '?';
   const authorInitial = authorName[0].toUpperCase();
+
+  const canSubmit = (content.trim().length > 0 || mediaFiles.length > 0) && !isSubmitting;
 
   return (
     <div className="rounded-xl border bg-card shadow-card">
@@ -106,6 +152,40 @@ export function PostComposer({ onPostCreated, defaultAudience = 'global', lockAu
                   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSubmit();
                 }}
               />
+
+              {/* Media previews */}
+              {mediaPreviews.length > 0 && (
+                <div className={cn(
+                  'grid gap-1 rounded-xl overflow-hidden',
+                  mediaPreviews.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+                )}>
+                  {mediaPreviews.map((preview, i) => {
+                    const isVideo = mediaFiles[i]?.type.startsWith('video/');
+                    return (
+                      <div key={i} className="relative group aspect-square">
+                        {isVideo ? (
+                          <video
+                            src={preview}
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        ) : (
+                          <img
+                            src={preview}
+                            alt=""
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        )}
+                        <button
+                          onClick={() => removeMedia(i)}
+                          className="absolute top-1 right-1 h-6 w-6 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3.5 w-3.5 text-white" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Tags input */}
               {showTags && (
@@ -151,6 +231,53 @@ export function PostComposer({ onPostCreated, defaultAudience = 'global', lockAu
               {/* Toolbar */}
               <div className="flex items-center justify-between border-t pt-3">
                 <div className="flex items-center gap-1">
+                  {/* Inputs de mídia */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,video/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                  <input
+                    ref={cameraInputRef}
+                    type="file"
+                    accept="image/*,video/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                  {/* Galeria */}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={mediaFiles.length >= MAX_MEDIA}
+                    className={cn(
+                      'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors',
+                      mediaFiles.length > 0
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                      mediaFiles.length >= MAX_MEDIA && 'opacity-40 cursor-not-allowed'
+                    )}
+                    title={mediaFiles.length >= MAX_MEDIA ? `Máximo de ${MAX_MEDIA} arquivos` : 'Adicionar da galeria'}
+                  >
+                    <ImagePlus className="h-3.5 w-3.5" />
+                    {mediaFiles.length > 0 ? `${mediaFiles.length}/${MAX_MEDIA}` : 'Mídia'}
+                  </button>
+                  {/* Câmera */}
+                  <button
+                    onClick={() => cameraInputRef.current?.click()}
+                    disabled={mediaFiles.length >= MAX_MEDIA}
+                    className={cn(
+                      'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors',
+                      'text-muted-foreground hover:bg-muted hover:text-foreground',
+                      mediaFiles.length >= MAX_MEDIA && 'opacity-40 cursor-not-allowed'
+                    )}
+                    title="Tirar foto ou gravar vídeo"
+                  >
+                    <Camera className="h-3.5 w-3.5" />
+                  </button>
+
                   {/* Tags toggle */}
                   <button
                     onClick={() => setShowTags(!showTags)}
@@ -209,6 +336,9 @@ export function PostComposer({ onPostCreated, defaultAudience = 'global', lockAu
                       setContent('');
                       setTags('');
                       setShowTags(false);
+                      mediaPreviews.forEach((url) => URL.revokeObjectURL(url));
+                      setMediaFiles([]);
+                      setMediaPreviews([]);
                     }}
                     className="text-xs h-8"
                   >
@@ -217,11 +347,17 @@ export function PostComposer({ onPostCreated, defaultAudience = 'global', lockAu
                   <Button
                     size="sm"
                     onClick={handleSubmit}
-                    disabled={!content.trim() || isSubmitting}
+                    disabled={!canSubmit}
                     className="gap-1.5 h-8 text-xs"
                   >
-                    <Send className="h-3.5 w-3.5" />
-                    {isSubmitting ? 'Publicando...' : 'Publicar'}
+                    {isSubmitting ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Send className="h-3.5 w-3.5" />
+                    )}
+                    {isSubmitting
+                      ? mediaFiles.length > 0 ? 'Enviando...' : 'Publicando...'
+                      : 'Publicar'}
                   </Button>
                 </div>
               </div>
