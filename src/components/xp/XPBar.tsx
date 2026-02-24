@@ -16,8 +16,19 @@ interface XPBarProps {
 export function XPBar({ compact = false, sidebar = false, className }: XPBarProps) {
   const [summary, setSummary] = useState<XPSummary | null>(null);
 
-  useEffect(() => {
+  const fetchSummary = () => {
     xpApi.getSummary().then(setSummary).catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchSummary();
+  }, []);
+
+  // Re-fetch whenever the user earns XP so the bar updates in real time
+  useEffect(() => {
+    const handler = () => fetchSummary();
+    window.addEventListener('xp:gained', handler);
+    return () => window.removeEventListener('xp:gained', handler);
   }, []);
 
   if (!summary) return null;
