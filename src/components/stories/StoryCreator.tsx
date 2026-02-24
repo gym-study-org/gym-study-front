@@ -316,7 +316,7 @@ export function StoryCreator({ isOpen, onClose, onCreated }: StoryCreatorProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-sm p-0 overflow-hidden bg-black border-0 rounded-2xl [&>button]:text-white [&>button]:z-50">
+      <DialogContent className="max-w-sm w-full h-[92vh] max-h-[720px] p-0 overflow-hidden bg-black border-0 rounded-2xl flex flex-col [&>button]:text-white [&>button]:z-50">
         <DialogTitle className="sr-only">Criar Story</DialogTitle>
         {/* Gallery picker */}
         <input
@@ -455,9 +455,9 @@ export function StoryCreator({ isOpen, onClose, onCreated }: StoryCreatorProps) 
 
         {/* ── EDIT STEP ──────────────────────────────────────────────────────── */}
         {step === 'edit' && (
-          <div className="flex flex-col">
-            {/* Top bar */}
-            <div className="flex items-center justify-between px-3 py-2 bg-black/80 backdrop-blur">
+          <div className="flex flex-col flex-1 min-h-0">
+            {/* Top bar — always visible, never pushed off screen */}
+            <div className="flex items-center justify-between px-3 py-2 bg-black/80 backdrop-blur shrink-0 z-10">
               <button
                 onClick={() => setStep('pick')}
                 className="flex items-center gap-1 text-white/80 hover:text-white transition-colors text-sm"
@@ -475,14 +475,11 @@ export function StoryCreator({ isOpen, onClose, onCreated }: StoryCreatorProps) 
               </Button>
             </div>
 
-            {/* Preview area — 9:16 ratio */}
+            {/* Preview area — flex-1 so it fills available space and shrinks when panels open */}
             <div
               ref={containerRef}
-              className="relative w-full overflow-hidden bg-black select-none"
-              style={{
-                aspectRatio: '9/16',
-                backgroundColor: !mediaFile ? selectedBg : undefined,
-              }}
+              className="relative flex-1 min-h-0 overflow-hidden bg-black select-none"
+              style={{ backgroundColor: !mediaFile ? selectedBg : undefined }}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
               onPointerLeave={handlePointerUp}
@@ -496,12 +493,12 @@ export function StoryCreator({ isOpen, onClose, onCreated }: StoryCreatorProps) 
                   draggable={false}
                 />
               )}
+              {/* Video — no CSS filter (filters only for images) */}
               {mediaPreview && mediaType === 'video' && (
                 <video
                   ref={videoRef}
                   src={mediaPreview}
                   className="w-full h-full object-cover"
-                  style={{ filter: filterCss }}
                   playsInline
                   autoPlay
                   loop
@@ -581,223 +578,211 @@ export function StoryCreator({ isOpen, onClose, onCreated }: StoryCreatorProps) 
               ))}
             </div>
 
-            {/* Tool toolbar */}
-            <div className="flex items-center justify-around bg-black/90 px-2 py-2 border-t border-white/10">
-              {mediaFile && (
+            {/* ── Bottom section: toolbar + active panel (anchored, never grows beyond fixed size) */}
+            <div className="shrink-0 flex flex-col bg-black border-t border-white/10">
+
+              {/* Tool toolbar */}
+              <div className="flex items-center justify-around px-2 py-2">
+                {/* Filters — images only */}
+                {mediaFile && mediaType === 'image' && (
+                  <button
+                    onClick={() => setToolPanel(toolPanel === 'filters' ? null : 'filters')}
+                    className={cn(
+                      'flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors text-xs',
+                      toolPanel === 'filters' ? 'text-primary bg-primary/10' : 'text-white/70 hover:text-white'
+                    )}
+                  >
+                    <Palette className="h-4 w-4" />
+                    Filtros
+                  </button>
+                )}
                 <button
-                  onClick={() => setToolPanel(toolPanel === 'filters' ? null : 'filters')}
+                  onClick={() => setToolPanel(toolPanel === 'text' ? null : 'text')}
                   className={cn(
                     'flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors text-xs',
-                    toolPanel === 'filters' ? 'text-primary bg-primary/10' : 'text-white/70 hover:text-white'
+                    toolPanel === 'text' ? 'text-primary bg-primary/10' : 'text-white/70 hover:text-white'
                   )}
                 >
-                  <Palette className="h-4 w-4" />
-                  Filtros
+                  <Type className="h-4 w-4" />
+                  Texto
                 </button>
-              )}
-              <button
-                onClick={() => setToolPanel(toolPanel === 'text' ? null : 'text')}
-                className={cn(
-                  'flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors text-xs',
-                  toolPanel === 'text' ? 'text-primary bg-primary/10' : 'text-white/70 hover:text-white'
-                )}
-              >
-                <Type className="h-4 w-4" />
-                Texto
-              </button>
-              <button
-                onClick={() => setToolPanel(toolPanel === 'emoji' ? null : 'emoji')}
-                className={cn(
-                  'flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors text-xs',
-                  toolPanel === 'emoji' ? 'text-primary bg-primary/10' : 'text-white/70 hover:text-white'
-                )}
-              >
-                <Smile className="h-4 w-4" />
-                Emoji
-              </button>
-              {mediaType === 'video' && (
                 <button
-                  onClick={() => setToolPanel(toolPanel === 'trim' ? null : 'trim')}
+                  onClick={() => setToolPanel(toolPanel === 'emoji' ? null : 'emoji')}
                   className={cn(
                     'flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors text-xs',
-                    toolPanel === 'trim' ? 'text-primary bg-primary/10' : 'text-white/70 hover:text-white'
+                    toolPanel === 'emoji' ? 'text-primary bg-primary/10' : 'text-white/70 hover:text-white'
                   )}
                 >
-                  <Scissors className="h-4 w-4" />
-                  Cortar
+                  <Smile className="h-4 w-4" />
+                  Emoji
                 </button>
-              )}
-              {/* Background color picker for text-only stories */}
-              {!mediaFile && toolPanel !== 'text' && toolPanel !== 'emoji' && (
-                <div className="flex gap-1.5">
-                  {STORY_BG_COLORS.map(color => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedBg(color)}
-                      className={cn(
-                        'h-5 w-5 rounded-full transition-transform',
-                        selectedBg === color && 'ring-2 ring-white ring-offset-1 ring-offset-black scale-110'
-                      )}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+                {mediaType === 'video' && (
+                  <button
+                    onClick={() => setToolPanel(toolPanel === 'trim' ? null : 'trim')}
+                    className={cn(
+                      'flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors text-xs',
+                      toolPanel === 'trim' ? 'text-primary bg-primary/10' : 'text-white/70 hover:text-white'
+                    )}
+                  >
+                    <Scissors className="h-4 w-4" />
+                    Cortar
+                  </button>
+                )}
+                {/* Background color picker for text-only stories */}
+                {!mediaFile && toolPanel !== 'text' && toolPanel !== 'emoji' && (
+                  <div className="flex gap-1.5">
+                    {STORY_BG_COLORS.map(color => (
+                      <button
+                        key={color}
+                        onClick={() => setSelectedBg(color)}
+                        className={cn(
+                          'h-5 w-5 rounded-full transition-transform',
+                          selectedBg === color && 'ring-2 ring-white ring-offset-1 ring-offset-black scale-110'
+                        )}
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
 
-            {/* ── Active panels ─────────────────────────────────────────────── */}
+              {/* ── Active panels — fixed max height so they never push Publicar off screen */}
 
-            {toolPanel === 'filters' && (
-              <div className="bg-black/95 px-3 py-3 border-t border-white/10">
-                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                  {STORY_FILTERS.map(f => (
-                    <button
-                      key={f.key}
-                      onClick={() => setSelectedFilter(f.key)}
-                      className={cn(
-                        'flex flex-col items-center gap-1 shrink-0 transition-opacity',
-                        selectedFilter === f.key ? 'opacity-100' : 'opacity-55 hover:opacity-80'
-                      )}
-                    >
-                      {mediaPreview && mediaType === 'image' ? (
+              {toolPanel === 'filters' && (
+                <div className="border-t border-white/10 px-3 py-2.5">
+                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                    {STORY_FILTERS.map(f => (
+                      <button
+                        key={f.key}
+                        onClick={() => setSelectedFilter(f.key)}
+                        className={cn(
+                          'flex flex-col items-center gap-1 shrink-0 transition-opacity',
+                          selectedFilter === f.key ? 'opacity-100' : 'opacity-55 hover:opacity-80'
+                        )}
+                      >
                         <img
-                          src={mediaPreview}
+                          src={mediaPreview!}
                           alt={f.label}
-                          className="h-14 w-10 object-cover rounded"
+                          className="h-12 w-9 object-cover rounded"
                           style={{ filter: f.css }}
                           draggable={false}
                         />
-                      ) : (
-                        <div
-                          className="h-14 w-10 rounded"
-                          style={{ backgroundColor: selectedBg, filter: f.css }}
-                        />
-                      )}
-                      <span className={cn(
-                        'text-[10px] font-medium',
-                        selectedFilter === f.key ? 'text-primary' : 'text-white/70'
-                      )}>
-                        {f.label}
-                      </span>
-                    </button>
-                  ))}
+                        <span className={cn(
+                          'text-[10px] font-medium',
+                          selectedFilter === f.key ? 'text-primary' : 'text-white/70'
+                        )}>
+                          {f.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {toolPanel === 'text' && (
-              <div className="bg-black/95 px-3 py-3 space-y-2 border-t border-white/10">
-                {/* Text-only story content */}
-                {!mediaFile && (
-                  <input
-                    className="w-full rounded-lg bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none"
-                    placeholder="Texto do story (fundo colorido)..."
-                    value={textOnlyContent}
-                    onChange={e => setTextOnlyContent(e.target.value)}
-                    maxLength={500}
-                    autoFocus
-                  />
-                )}
-                {/* Text overlay input */}
-                <div className="flex gap-2 items-center">
-                  <input
-                    className="flex-1 rounded-lg bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none"
-                    placeholder={mediaFile ? 'Adicionar texto sobreposto...' : 'Texto adicional sobreposto...'}
-                    value={newText}
-                    onChange={e => setNewText(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && addText()}
-                  />
-                  <button
-                    onClick={addText}
-                    disabled={!newText.trim()}
-                    className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center disabled:opacity-40 shrink-0"
-                  >
-                    <Plus className="h-4 w-4 text-white" />
-                  </button>
-                </div>
-                {/* Color + size */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] text-white/50">Cor:</span>
-                  {TEXT_COLORS.map(c => (
-                    <button
-                      key={c}
-                      onClick={() => setTextColor(c)}
-                      className={cn(
-                        'h-5 w-5 rounded-full border border-white/30 transition-transform shrink-0',
-                        textColor === c && 'ring-2 ring-white ring-offset-1 ring-offset-black scale-110'
-                      )}
-                      style={{ backgroundColor: c }}
+              {toolPanel === 'text' && (
+                <div className="border-t border-white/10 px-3 py-2.5 space-y-2">
+                  {!mediaFile && (
+                    <input
+                      className="w-full rounded-lg bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none"
+                      placeholder="Texto do story..."
+                      value={textOnlyContent}
+                      onChange={e => setTextOnlyContent(e.target.value)}
+                      maxLength={500}
+                      autoFocus
                     />
-                  ))}
-                  <span className="text-[10px] text-white/50 ml-1">Tam:</span>
-                  <input
-                    type="range"
-                    min={16} max={48} step={2}
-                    value={textSize}
-                    onChange={e => setTextSize(Number(e.target.value))}
-                    className="flex-1 h-1 accent-primary min-w-[60px]"
-                  />
-                  <span className="text-[10px] text-white/50">{textSize}px</span>
-                </div>
-              </div>
-            )}
-
-            {toolPanel === 'emoji' && (
-              <div className="bg-black/95 px-3 py-3 border-t border-white/10">
-                <div className="grid grid-cols-6 gap-2">
-                  {EMOJI_LIST.map(emoji => (
+                  )}
+                  <div className="flex gap-2 items-center">
+                    <input
+                      className="flex-1 rounded-lg bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none"
+                      placeholder={mediaFile ? 'Adicionar texto sobreposto...' : 'Texto adicional sobreposto...'}
+                      value={newText}
+                      onChange={e => setNewText(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && addText()}
+                    />
                     <button
-                      key={emoji}
-                      onClick={() => addSticker(emoji)}
-                      className="text-2xl hover:scale-125 transition-transform active:scale-110"
+                      onClick={addText}
+                      disabled={!newText.trim()}
+                      className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center disabled:opacity-40 shrink-0"
                     >
-                      {emoji}
+                      <Plus className="h-4 w-4 text-white" />
                     </button>
-                  ))}
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] text-white/50">Cor:</span>
+                    {TEXT_COLORS.map(c => (
+                      <button
+                        key={c}
+                        onClick={() => setTextColor(c)}
+                        className={cn(
+                          'h-5 w-5 rounded-full border border-white/30 transition-transform shrink-0',
+                          textColor === c && 'ring-2 ring-white ring-offset-1 ring-offset-black scale-110'
+                        )}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                    <span className="text-[10px] text-white/50 ml-1">Tam:</span>
+                    <input
+                      type="range" min={16} max={48} step={2}
+                      value={textSize}
+                      onChange={e => setTextSize(Number(e.target.value))}
+                      className="flex-1 h-1 accent-primary min-w-[60px]"
+                    />
+                    <span className="text-[10px] text-white/50">{textSize}px</span>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {toolPanel === 'trim' && mediaType === 'video' && videoDuration > 0 && (
-              <div className="bg-black/95 px-3 py-3 space-y-2 border-t border-white/10">
-                <p className="text-xs text-white/60">Cortar vídeo</p>
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-white/50 w-10">Início</span>
-                    <input
-                      type="range"
-                      min={0}
-                      max={videoDuration}
-                      step={0.1}
-                      value={trimStart}
-                      onChange={e => {
-                        const val = Math.min(Number(e.target.value), trimEnd - 0.5);
-                        setTrimStart(val);
-                        if (videoRef.current) videoRef.current.currentTime = val;
-                      }}
-                      className="flex-1 h-1 accent-primary"
-                    />
-                    <span className="text-[10px] text-white/70 w-10 text-right">{trimStart.toFixed(1)}s</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-white/50 w-10">Fim</span>
-                    <input
-                      type="range"
-                      min={0}
-                      max={videoDuration}
-                      step={0.1}
-                      value={trimEnd}
-                      onChange={e => {
-                        const val = Math.max(Number(e.target.value), trimStart + 0.5);
-                        setTrimEnd(val);
-                      }}
-                      className="flex-1 h-1 accent-primary"
-                    />
-                    <span className="text-[10px] text-white/70 w-10 text-right">{trimEnd.toFixed(1)}s</span>
+              {toolPanel === 'emoji' && (
+                <div className="border-t border-white/10 px-3 py-2.5">
+                  <div className="grid grid-cols-6 gap-2">
+                    {EMOJI_LIST.map(emoji => (
+                      <button
+                        key={emoji}
+                        onClick={() => addSticker(emoji)}
+                        className="text-2xl hover:scale-125 transition-transform active:scale-110"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {toolPanel === 'trim' && mediaType === 'video' && videoDuration > 0 && (
+                <div className="border-t border-white/10 px-3 py-2.5 space-y-2">
+                  <p className="text-xs text-white/60">Cortar vídeo</p>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-white/50 w-10">Início</span>
+                      <input
+                        type="range" min={0} max={videoDuration} step={0.1}
+                        value={trimStart}
+                        onChange={e => {
+                          const val = Math.min(Number(e.target.value), trimEnd - 0.5);
+                          setTrimStart(val);
+                          if (videoRef.current) videoRef.current.currentTime = val;
+                        }}
+                        className="flex-1 h-1 accent-primary"
+                      />
+                      <span className="text-[10px] text-white/70 w-10 text-right">{trimStart.toFixed(1)}s</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-white/50 w-10">Fim</span>
+                      <input
+                        type="range" min={0} max={videoDuration} step={0.1}
+                        value={trimEnd}
+                        onChange={e => {
+                          const val = Math.max(Number(e.target.value), trimStart + 0.5);
+                          setTrimEnd(val);
+                        }}
+                        className="flex-1 h-1 accent-primary"
+                      />
+                      <span className="text-[10px] text-white/70 w-10 text-right">{trimEnd.toFixed(1)}s</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
