@@ -115,7 +115,7 @@ export default function StatsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {stats.total_sessions > 0 ? (stats.total_minutes / stats.total_sessions).toFixed(0) : 0} min
+                {stats.total_sessions > 0 ? ((stats.total_hours * 60 + stats.total_minutes) / stats.total_sessions).toFixed(0) : 0} min
               </div>
               <p className="text-xs text-muted-foreground">por sessão</p>
             </CardContent>
