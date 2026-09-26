@@ -13,7 +13,7 @@ export interface FriendRequest {
   id: string;
   requester_id: string;
   requester_name: string;
-  requester_email: string;
+  requester_full_name: string | null;
   requester_avatar_url: string | null;
   created_at: string;
 }
@@ -22,7 +22,6 @@ export interface SearchedUser {
   id: string;
   username: string;
   full_name: string | null;
-  email: string;
   avatar_url: string | null;
   total_study_hours: number;
   friendship_status: string | null;

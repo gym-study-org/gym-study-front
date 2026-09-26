@@ -237,7 +237,7 @@ export default function FriendsPage() {
                       />
                       <div>
                         <p className="font-semibold hover:text-primary">{request.requester_name}</p>
-                        <p className="text-sm text-muted-foreground">{request.requester_email}</p>
+                        <p className="text-sm text-muted-foreground">{request.requester_full_name}</p>
                       </div>
                     </div>
                     <div className="flex gap-2">
